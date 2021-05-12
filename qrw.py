@@ -15,13 +15,13 @@ def cnx(qc, *qubits):
 
         # A matrix
         qc.crz(np.pi/2, qubits[-2], qubits[-1])
-        qc.cu3(np.pi/2, 0, 0, qubits[-2], qubits[-1])
+        qc.cu(np.pi/2, 0, 0, qubits[-2], qubits[-1], 0)
 
         # CNOT gate
         cnx(qc, *qubits[:-2], qubits[-1])
 
         # B matrix
-        qc.cu3(-np.pi/2, 0, 0, qubits[-2], qubits[-1])
+        qc.cu(-np.pi/2, 0, 0, qubits[-2], qubits[-1], 0)
 
         # Control
         cnx(qc,*qubits[:-2],qubits[-1])
@@ -36,7 +36,6 @@ def cnx(qc, *qubits):
 
 # Increment Gate - shift position forward
 def increment_gate(qwc, q, subnode):
-    print(type(subnode))
     cnx(qwc, subnode, q[2], q[1], q[0])
     cnx(qwc, subnode, q[2], q[1])
     cnx(qwc, subnode, q[2])
@@ -64,7 +63,7 @@ def ibmsim(circ):
     sim = AerSimulator()
 
     compiled = transpile(circ, sim)
-    return sim.run(compiled, shots=1000).result()
+    return sim.run(compiled, shots=100000).result()
 
 
 qnodes = QuantumRegister(n, 'qc')
@@ -81,15 +80,21 @@ def runQWC(qwc, times):
         qwc.h(qsubnodes[0])
         increment_gate(qwc, qnodes, qsubnodes[0])
         decrement_gate(qwc,qnodes,qsubnodes[0])
-        qwc.measure(qnodes, cnodes)
+    qwc.measure(qnodes, cnodes)
 
     return qwc
 
 
-import matplotlib as mpl
-step = 1
+import matplotlib.pyplot as plt
+step = 14
 qwc = runQWC(qwc, step)
-qwc.draw(output="mpl")
+qwc.save_state()
+# qwc.draw(output="mpl")
 result = ibmsim(qwc)
+print(result.data()['counts'])
+keys = result.data()['counts'].keys()
+values = result.data()['counts'].values()
+plt.bar(keys, values)
+plt.show()
 
-print(result)
+# print(result)
