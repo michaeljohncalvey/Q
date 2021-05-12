@@ -1,5 +1,5 @@
 import numpy as np
-from qiskit import IBMQ, QuantumCircuit, ClassicalRegister, QuantumRegister, execute
+from qiskit import IBMQ, QuantumCircuit, ClassicalRegister, QuantumRegister, execute, transpile
 from qiskit.tools.visualization import plot_histogram, plot_state_city
 
 n = 3
@@ -63,8 +63,8 @@ from qiskit.providers.aer import AerSimulator
 def ibmsim(circ):
     sim = AerSimulator()
 
-    
-    return sim.run(circ, ibmq_backend, shots=1000).result().get_counts(circ)
+    compiled = transpile(circ, sim)
+    return sim.run(compiled, shots=1000).result()
 
 
 qnodes = QuantumRegister(n, 'qc')
